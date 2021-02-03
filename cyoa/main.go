@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"text/template"
 )
 
 type storyOption struct {
@@ -32,4 +33,17 @@ func main() {
 
 	var story map[string]chapter
 	json.Unmarshal(bytes, &story)
+
+	var someChap chapter
+	for _, c := range story {
+		someChap = c
+		break
+	}
+
+	htmlTmpl, err := template.ParseFiles("layout.html")
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	htmlTmpl.Execute(os.Stdout, someChap)
 }
