@@ -2,8 +2,10 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"text/template"
 )
@@ -19,6 +21,26 @@ type chapter struct {
 	Options    []storyOption
 }
 
+type cyoaStory map[string]chapter
+
+func NewHandler(story cyoaStory) http.Handler {
+	return handler{story: story}
+}
+
+type handler struct {
+	story cyoaStory
+}
+
+func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	tmpl := template.Must(template.ParseFiles("layout.html"))
+
+	// For simplicity, all stories will have a story arc named "intro" that is where the story starts.
+	err := tmpl.Execute(w, h.story["intro"])
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
 func main() {
 	jsonFile, err := os.Open("gopher.json")
 	if err != nil {
@@ -31,19 +53,12 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	var story map[string]chapter
+	var story cyoaStory
 	json.Unmarshal(bytes, &story)
 
-	var someChap chapter
-	for _, c := range story {
-		someChap = c
-		break
-	}
+	h := NewHandler(story)
 
-	htmlTmpl, err := template.ParseFiles("layout.html")
-	if err != nil {
-		log.Fatalln(err)
-	}
+	fmt.Println("Starting the server on :8081")
 
-	htmlTmpl.Execute(os.Stdout, someChap)
+	log.Fatalln(http.ListenAndServe(":8081", h))
 }
