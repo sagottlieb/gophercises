@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"text/template"
 )
 
@@ -34,11 +35,21 @@ type handler struct {
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	tmpl := template.Must(template.ParseFiles("layout.html"))
 
-	// For simplicity, all stories will have a story arc named "intro" that is where the story starts.
-	err := tmpl.Execute(w, h.story["intro"])
-	if err != nil {
-		log.Fatalln(err)
+	path := strings.TrimLeft(strings.TrimSpace(r.URL.Path), "/")
+
+	// every JSON file will have a key with the value `intro` and this is where your story should start.
+	if path == "" {
+		path = "intro"
 	}
+	if chapter, exists := h.story[path]; exists {
+		err := tmpl.Execute(w, chapter)
+		if err != nil {
+			log.Printf("%v\n", err)
+			http.Error(w, "An adventure indeed...", http.StatusInternalServerError)
+		}
+		return
+	}
+	http.Error(w, "Chapter not found", http.StatusNotFound)
 }
 
 func main() {
