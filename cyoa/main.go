@@ -24,17 +24,16 @@ type chapter struct {
 
 type cyoaStory map[string]chapter
 
-func NewHandler(story cyoaStory) http.Handler {
-	return handler{story: story}
+type handler struct {
+	story    cyoaStory
+	template *template.Template
 }
 
-type handler struct {
-	story cyoaStory
+func NewHandler(story cyoaStory, tmpl *template.Template) http.Handler {
+	return handler{story: story, template: tmpl}
 }
 
 func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.ParseFiles("layout.html"))
-
 	path := strings.TrimLeft(strings.TrimSpace(r.URL.Path), "/")
 
 	// every JSON file will have a key with the value `intro` and this is where your story should start.
@@ -42,7 +41,7 @@ func (h handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		path = "intro"
 	}
 	if chapter, exists := h.story[path]; exists {
-		err := tmpl.Execute(w, chapter)
+		err := h.template.Execute(w, chapter)
 		if err != nil {
 			log.Printf("%v\n", err)
 			http.Error(w, "An adventure indeed...", http.StatusInternalServerError)
@@ -67,7 +66,9 @@ func main() {
 	var story cyoaStory
 	json.Unmarshal(bytes, &story)
 
-	h := NewHandler(story)
+	tmpl := template.Must(template.ParseFiles("layout.html"))
+
+	h := NewHandler(story, tmpl)
 
 	fmt.Println("Starting the server on :8081")
 
