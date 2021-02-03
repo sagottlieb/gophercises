@@ -4,7 +4,7 @@
     </head>
     <body>
         <h1>{{.Title}}</h1>
-        {{range $line := .Story}}
+        {{range $line := .Paragraphs}}
             <p>{{$line}}</p>
         {{end}}
         <ul>

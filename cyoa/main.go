@@ -9,14 +9,14 @@ import (
 )
 
 type storyOption struct {
-	Text string
-	Arc  string
+	Text        string
+	ChapterName string `json:"arc"`
 }
 
 type chapter struct {
-	Title   string
-	Story   []string
-	Options []storyOption
+	Title      string
+	Paragraphs []string `json:"story"`
+	Options    []storyOption
 }
 
 func main() {
