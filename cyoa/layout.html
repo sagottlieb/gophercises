@@ -1,0 +1,16 @@
+<html>
+    <head>
+        <title>Choose Your Own Adventure</title>
+    </head>
+    <body>
+        <h1>{{.Title}}</h1>
+        {{range $line := .Paragraphs}}
+            <p>{{$line}}</p>
+        {{end}}
+        <ul>
+        {{range $option := .Options}}
+            <li><a href="{{$option.ChapterName}}">{{$option.Text}}</a></li>
+        {{end}}
+        </ul>
+    </body>
+</html>
