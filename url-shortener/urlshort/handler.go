@@ -1,9 +1,8 @@
 package urlshort
 
 import (
-	"net/http"
-
 	"gopkg.in/yaml.v2"
+	"net/http"
 )
 
 // MapHandler will return an http.HandlerFunc (which also
@@ -22,7 +21,6 @@ func MapHandler(pathsToUrls map[string]string, fallback http.Handler) http.Handl
 		}
 
 		fallback.ServeHTTP(w, r)
-
 	}
 
 }
